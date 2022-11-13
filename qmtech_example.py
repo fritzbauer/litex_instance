@@ -7,10 +7,10 @@ from amaranth_boards.resources import *
 from amaranth_boards.qmtech_daughterboard import QMTechDaughterboard
 
 
-__all__ = ["QMTech5CEFA2Platform"]
+__all__ = ["QMTech5CEFA2PlatformTest"]
 
 
-class QMTech5CEFA2Platform(IntelPlatform):
+class QMTech5CEFA2PlatformExample(IntelPlatform):
     device      = "5CEFA2"
     package     = "F23"
     speed       = "C8"
@@ -50,6 +50,8 @@ class QMTech5CEFA2Platform(IntelPlatform):
             ba="T7 P9", a="P8 P7 N8 N6 U6 U7 V6 U8 T8 W8 R6 T9 Y9",
             dq="AA12 Y11 AA10 AB10 Y10 AA9 AB8 AA8 U10 T10 U11 R12 U12 P12 R10 R11", dqm="AB7 V10",
             attrs=Attrs(io_standard="3.3-V LVTTL")),
+
+        UARTResource(0, rx="J_2:8", tx="J_2:10", attrs=Attrs(io_standard="3.3-V LVCMOS")),
     ]
 
     # The connectors are named after the daughterboard, not the core board
@@ -127,5 +129,5 @@ class QMTech5CEFA2Platform(IntelPlatform):
                                     "--operation", "P;" + bitstream_filename])
 
 if __name__ == "__main__":
-    from amaranth_boards.test.blinky import Blinky
-    QMTech5CEFA2Platform(standalone=True).build(Blinky(), do_program=True)
+    from instance_example import InstanceExample
+    QMTech5CEFA2PlatformExample(standalone=True).build(InstanceExample(), do_program=True)

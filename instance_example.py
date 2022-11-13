@@ -2,14 +2,17 @@ import itertools
 
 from amaranth import *
 from amaranth.build import ResourceError
+from litex_soc import LiteXSoC
+from pll import IntelCycloneVClockDomainGenerator
+
+__all__ = ["InstanceExample"]
 
 
-__all__ = ["Blinky"]
-
-
-class Blinky(Elaboratable):
+class InstanceExample(Elaboratable):
     def elaborate(self, platform):
         m = Module()
+
+        m.submodules.pll = pll = IntelCycloneVClockDomainGenerator()
 
         def get_all_resources(name):
             resources = []
@@ -44,5 +47,7 @@ class Blinky(Elaboratable):
             m.d.sync += flops.eq(~flops)
         with m.Else():
             m.d.sync += timer.eq(timer - 1)
+
+        m.submodules.litex_soc = litex_soc = LiteXSoC()
 
         return m
