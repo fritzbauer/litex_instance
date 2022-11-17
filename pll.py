@@ -7,11 +7,9 @@ class ClockDomainGeneratorBase():
     NO_PHASE_SHIFT  = 0
 
     def wire_up_reset(self, m, reset):
-        m.submodules.reset_sync_fast = ResetSynchronizer(reset, domain="fast")
-        m.submodules.reset_sync_usb  = ResetSynchronizer(reset, domain="usb")
         m.submodules.reset_sync_sync = ResetSynchronizer(reset, domain="sync")
-        m.submodules.reset_sync_dac  = ResetSynchronizer(reset, domain="dac")
-        m.submodules.reset_sync_adat = ResetSynchronizer(reset, domain="adat")
+        m.submodules.reset_sync_soc = ResetSynchronizer(reset, domain="soc")  
+        m.submodules.reset_sync_sdram = ResetSynchronizer(reset, domain="sdram")  
 
 class IntelCycloneVClockDomainGenerator(Elaboratable, ClockDomainGeneratorBase):
 
@@ -27,21 +25,18 @@ class IntelCycloneVClockDomainGenerator(Elaboratable, ClockDomainGeneratorBase):
         # dac: I2S DAC clock 48k = 3.072 MHz = 48 kHz * 32 bit * 2 channels
         # sync: ADAT transmit domain clock = 61.44 MHz = 48 kHz * 256 * 5 output terminals
         # fast: ADAT sampling clock = 98.304 MHz = 48 kHz * 256 * 8 times oversampling
-        m.domains.usb  = ClockDomain("usb")
         m.domains.sync = ClockDomain("sync")
-        m.domains.fast = ClockDomain("fast")
-        m.domains.adat = ClockDomain("adat")
-        m.domains.dac  = ClockDomain("dac")
         m.domains.soc = ClockDomain("soc")
         m.domains.sdram = ClockDomain("sdram")
+
 
         clk = platform.request(platform.default_clk)
 
         main_clock    = Signal()
-        audio_clocks  = Signal(6)
+        sdram_clocks  = Signal(6)
 
         sys_locked    = Signal()
-        audio_locked  = Signal()
+        sdram_locked  = Signal()
 
         reset         = Signal()
 
@@ -68,31 +63,23 @@ class IntelCycloneVClockDomainGenerator(Elaboratable, ClockDomainGeneratorBase):
             p_fractional_vco_multiplier="true",
             p_operation_mode="normal",
             p_reference_clock_frequency="60.0 MHz",
-            p_number_of_clocks="6",
+            p_number_of_clocks="2",
 
-            p_output_clock_frequency0="12.288000 MHz",
-            p_output_clock_frequency1="3.072000 MHz",
-            p_output_clock_frequency2="61.440000 MHz",
-            p_output_clock_frequency3="98.304000 MHz",
-            p_output_clock_frequency4="109.226666 MHz",
-            p_output_clock_frequency5="109.226666 MHz",
-            p_phase_shift5="253 ps",
+            p_output_clock_frequency0="109.226666 MHz",
+            p_output_clock_frequency1="109.226666 MHz",
+            p_phase_shift1="253 ps",
 
             # Drive our clock from the mainpll
             i_refclk=main_clock,
-            o_outclk=audio_clocks,
-            o_locked=audio_locked
+            o_outclk=sdram_clocks,
+            o_locked=sdram_locked
         )
 
         m.d.comb += [
-            reset.eq(~(sys_locked & audio_locked)),
-            ClockSignal("usb") .eq(main_clock),
-            ClockSignal("adat").eq(audio_clocks[0]),
-            ClockSignal("dac").eq(audio_clocks[1]),
-            ClockSignal("sync").eq(audio_clocks[2]),
-            ClockSignal("fast").eq(audio_clocks[3]),
-            ClockSignal("soc").eq(audio_clocks[4]),
-            ClockSignal("sdram").eq(audio_clocks[5]),
+            reset.eq(~(sys_locked & sdram_locked)),
+            ClockSignal("sync").eq(main_clock),
+            ClockSignal("soc").eq(sdram_clocks[0]),
+            ClockSignal("sdram").eq(sdram_clocks[1]),
         ]
 
         self.wire_up_reset(m, reset)
