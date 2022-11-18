@@ -48,8 +48,8 @@ class LiteXSoC(Elaboratable):
         #dq = Tristate(sdram_resource.dq.o, sdram_resource.dq.oe, sdram_resource.dq.i)
 
         m.submodules.litex_soc = Instance("qmtech_5cefa2",
-            i_clk105 = ClockSignal("soc"),
-            i_clk105_ram= ClockSignal("sdram"),
+            i_clk50 = ClockSignal("soc"), #ClockSignal("soc"),
+            #i_clk105_ram= ClockSignal("sdram"),
             o_sdram_clock = sdram_resource.clk,
             o_serial_tx=uart_resource.tx,
             i_serial_rx=uart_resource.rx,
