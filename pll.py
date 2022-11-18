@@ -1,5 +1,4 @@
-from amaranth         import *
-from amaranth.build   import *
+from amaranth         import Elaboratable, Module, ClockDomain, Signal, Instance, ClockSignal
 from amaranth.lib.cdc import ResetSynchronizer
 
 
@@ -20,11 +19,9 @@ class IntelCycloneVClockDomainGenerator(Elaboratable, ClockDomainGeneratorBase):
         m = Module()
 
         # Create our domains
-        # usb: USB clock: 60MHz
-        # adat: ADAT clock = 12.288 MHz = 48 kHz * 256
-        # dac: I2S DAC clock 48k = 3.072 MHz = 48 kHz * 32 bit * 2 channels
-        # sync: ADAT transmit domain clock = 61.44 MHz = 48 kHz * 256 * 5 output terminals
-        # fast: ADAT sampling clock = 98.304 MHz = 48 kHz * 256 * 8 times oversampling
+        # sync: 60MHz
+        # soc: 110MHz
+        # sdram: 110MHz with phase shift
         m.domains.sync = ClockDomain("sync")
         m.domains.soc = ClockDomain("soc")
         m.domains.sdram = ClockDomain("sdram")
@@ -33,7 +30,7 @@ class IntelCycloneVClockDomainGenerator(Elaboratable, ClockDomainGeneratorBase):
         clk = platform.request(platform.default_clk)
 
         main_clock    = Signal()
-        sdram_clocks  = Signal(6)
+        sdram_clocks  = Signal(2)
 
         sys_locked    = Signal()
         sdram_locked  = Signal()

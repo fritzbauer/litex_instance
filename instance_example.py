@@ -1,7 +1,8 @@
 import itertools
 
-from amaranth import *
+from amaranth import Elaboratable, Module, Signal, Cat
 from amaranth.build import ResourceError
+
 from litex_soc import LiteXSoC
 from pll import IntelCycloneVClockDomainGenerator
 
@@ -23,19 +24,12 @@ class InstanceExample(Elaboratable):
                     break
             return resources
 
-        rgb_leds = [res for res in get_all_resources("rgb_led")]
         leds     = [res.o for res in get_all_resources("led")]
-        leds.extend([led.r.o for led in rgb_leds])
-        leds.extend([led.g.o for led in rgb_leds])
-        leds.extend([led.b.o for led in rgb_leds])
         buttons  = [res.i for res in get_all_resources("button")]
-        switches = [res.i for res in get_all_resources("switch")]
 
         inverts  = [0 for _ in leds]
         for index, button in zip(itertools.cycle(range(len(inverts))), buttons):
             inverts[index] ^= button
-        for index, switch in zip(itertools.cycle(range(len(inverts))), switches):
-            inverts[index] ^= switch
 
         clk_freq = platform.default_clk_frequency
         timer = Signal(range(int(clk_freq//2)), reset=int(clk_freq//2) - 1)

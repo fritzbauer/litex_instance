@@ -1,11 +1,11 @@
 import os
 import subprocess
 
-from amaranth.build import *
-from amaranth.vendor.intel import *
-from amaranth_boards.resources import *
-from amaranth_boards.qmtech_daughterboard import QMTechDaughterboard
+from amaranth.build import Clock,Pins, PinsN, Resource, Attrs, Connector
+from amaranth.vendor.intel import IntelPlatform
+from amaranth_boards.resources import LEDResources,ButtonResources, SPIFlashResources, SDRAMResource, UARTResource
 
+from instance_example import InstanceExample
 
 __all__ = ["QMTech5CEFA2PlatformTest"]
 
@@ -15,19 +15,6 @@ class QMTech5CEFA2PlatformExample(IntelPlatform):
     package     = "F23"
     speed       = "C8"
     default_clk = "clk50"
-
-    def __init__(self, standalone=True):
-        if not standalone:
-            # D3 - we do not use LEDResources/ButtonResources here, because there are five LEDs
-            # on the daughterboard and this will then clash with those
-            self.resources[1] = Resource("core_led",    0, PinsN("D17", dir="o"), Attrs(io_standard="3.3-V LVTTL"))
-            self.resources[2] = Resource("core_button", 0, PinsN("AB13"), Attrs(io_standard="3.3-V LVTTL"))
-            self.resources[3] = Resource("core_button", 1, PinsN("V18"), Attrs(io_standard="3.3-V LVTTL"))
-            daughterboard = QMTechDaughterboard(Attrs(io_standard="3.3-V LVTTL"))
-            self.connectors += daughterboard.connectors
-            self.resources  += daughterboard.resources
-
-        super().__init__()
 
     resources   = [
         Resource("clk50", 0, Pins("M9", dir="i"),
@@ -129,5 +116,4 @@ class QMTech5CEFA2PlatformExample(IntelPlatform):
                                     "--operation", "P;" + bitstream_filename])
 
 if __name__ == "__main__":
-    from instance_example import InstanceExample
-    QMTech5CEFA2PlatformExample(standalone=True).build(InstanceExample(), do_program=True)
+    QMTech5CEFA2PlatformExample().build(InstanceExample(), do_program=True)
